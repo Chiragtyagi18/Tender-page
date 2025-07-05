@@ -265,8 +265,8 @@ export default function CreateTenderPage() {
             return;
           }
           setCompanyId(data.id);
-        } catch (err: any) { // Changed 'Error' to 'any'
-          console.error('CreateTender: An unexpected error fetching company ID:', (err as Error).message || err);
+        } catch (err: unknown) { // Changed 'any' to 'unknown'
+          console.error('CreateTender: An unexpected error fetching company ID:', err instanceof Error ? err.message : err);
           setError('An unexpected error occurred. Please try again.');
         } finally {
           setLoading(false);
@@ -310,7 +310,7 @@ export default function CreateTenderPage() {
           company_id: companyId,
           title: title.trim(),
           description: description.trim(),
-          deadline: new Date(deadline).toISOString(), // Ensure ISO format for Supabase timestamp
+          deadline: new Date(deadline).toISOString(),
           budget: parsedBudget,
           requirements: requirements.trim() || null,
         });
@@ -320,10 +320,10 @@ export default function CreateTenderPage() {
         setError(`Failed to create tender: ${insertError.message}`);
       } else {
         toast.success('Tender created successfully!');
-        router.push('/dashboard'); // Redirect to dashboard or tenders list
+        router.push('/dashboard');
       }
-    } catch (err: any) { // Changed 'Error' to 'any'
-      console.error('CreateTender: An unexpected error occurred:', (err as Error).message || err);
+    } catch (err: unknown) { // Changed 'any' to 'unknown'
+      console.error('CreateTender: An unexpected error occurred:', err instanceof Error ? err.message : err);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
