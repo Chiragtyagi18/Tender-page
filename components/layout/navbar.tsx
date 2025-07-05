@@ -46,7 +46,7 @@ export function Navbar() {
                   Dashboard
                 </Link>
                 <Link
-                  href="/tenders"
+                  href="/tender"
                   className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
                 >
                   Browse Tenders
@@ -65,7 +65,7 @@ export function Navbar() {
             {user ? (
               <>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/tenders/create">
+                  <Link href="/tender/create">
                     <FileText className="h-4 w-4 mr-2" />
                     Post Tender
                   </Link>
