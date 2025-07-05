@@ -25,40 +25,55 @@ export default function SignUpPage() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const { signUp, user, loading: authLoading } = useAuth();
+  // Get signUp function, current user, and auth loading state from useAuth hook
+  const { signUp, user, loading: authLoading, signOut } = useAuth(); // Ensure signOut is destructured
   const router = useRouter();
 
+  // Effect to handle redirection based on user authentication and profile status
   useEffect(() => {
-    // If authentication is still loading, do nothing
+    // If authentication is still loading, do nothing yet
     if (authLoading) {
       return;
     }
 
-    
-    if (user && user.email_confirmed_at) {
-      const checkAndRedirect = async () => {
-        console.log('SignUpPage useEffect: Checking for existing company profile for user ID:', user.id);
-        const { data, error: companyCheckError } = await supabase
-          .from('companies')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-
-        if (data) {
-          console.log('SignUpPage useEffect: Company profile found, redirecting to dashboard.');
-          router.push('/dashboard');
-        } else if (companyCheckError && companyCheckError.code !== 'PGRST116') { // PGRST116 means "no rows found"
-          console.error('SignUpPage useEffect: Error checking company profile:', companyCheckError.message, companyCheckError);
-        } else {
-          console.log('SignUpPage useEffect: No existing company profile found, redirecting to onboarding.');
-          router.push('/onboarding');
-        }
-      };
-      checkAndRedirect();
+    // If there's no user, stay on the signup page
+    if (!user) {
+      console.log('SignUpPage useEffect: No user found, staying on signup page.');
+      return;
     }
-    // If user is null, or user exists but email is not confirmed,
-    // then the signup page should remain visible.
-  }, [user, authLoading, router]);
+
+    // If a user object exists, check their profile status
+    const checkProfileAndRedirect = async () => {
+      console.log('SignUpPage useEffect: User found:', user.id, 'Checking company profile...');
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (companyData) {
+        // User has a company profile, redirect to dashboard
+        console.log('SignUpPage useEffect: Company profile found, redirecting to dashboard.');
+        router.push('/dashboard');
+      } else if (companyError && companyError.code === 'PGRST116') {
+        // User exists in auth.users, but no company profile found (PGRST116 = no rows found)
+        // This means they need to complete onboarding, so redirect to onboarding page
+        console.log('SignUpPage useEffect: No company profile found, redirecting to onboarding.');
+        router.push('/onboarding');
+      } else if (companyError) {
+        // A different error occurred when checking company profile (e.g., user_id not found in public.users)
+        // This suggests a stale user session or a database inconsistency.
+        // Explicitly sign out to clear the client-side session.
+        console.error('SignUpPage useEffect: Error checking company profile (not PGRST116):', companyError.message, companyError);
+        console.log('SignUpPage useEffect: Stale session detected, signing out to clear state.');
+        await signOut(); // Crucial: Clear the client-side session
+        // After signOut, the useEffect will re-run, !user will be true, and it will correctly stay on signup.
+        toast.error('Your session was invalid. Please sign up or sign in again.');
+      }
+    };
+
+    checkProfileAndRedirect();
+  }, [user, authLoading, router, signOut]); // Add signOut to dependencies
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,16 +103,18 @@ export default function SignUpPage() {
     }
 
     try {
+      console.log('Attempting to sign up with email:', emailTrimmed);
       const { data: authData, error: authError } = await signUp(emailTrimmed, password);
 
       if (authError) {
         console.error('SignUpPage: Supabase authentication error during signup:', authError);
-        setError(authError.message);
+        setError(authError.message); // Display the exact error message from Supabase
         setLoading(false);
         return;
       }
 
       if (!authData?.session) {
+        // This path is taken if email confirmation is required and no session is immediately created
         setSuccessMessage('Account created! Please check your email to confirm your account and log in.');
         toast.success('Account created! Please check your email for a confirmation link.');
         setEmail('');
@@ -108,38 +125,23 @@ export default function SignUpPage() {
         return;
       }
 
+      // If a session exists (email confirmation not required or already confirmed via magic link/etc.)
       const authenticatedUser = authData.user;
 
       if (authenticatedUser) {
         console.log('SignUpPage: Authenticated User ID from authData:', authenticatedUser.id);
         console.log('SignUpPage: Authenticated User Email from authData:', authenticatedUser.email);
 
-        const { data: upsertData, error: userProfileUpsertError } = await supabase
-          .from('users')
-          .upsert(
-            {
-              id: authenticatedUser.id,
-              email: authenticatedUser.email!,
-            },
-            { onConflict: 'id' }
-          );
-
-        if (userProfileUpsertError) {
-          console.error('SignUpPage: CRITICAL ERROR upserting user profile to public.users table:', userProfileUpsertError.message, userProfileUpsertError);
-          setError('Failed to save user profile. Please try again.');
-          setLoading(false);
-          return;
-        } else {
-          console.log('SignUpPage: User profile upserted successfully into public.users:', upsertData);
-        }
+        // The public.users entry is now handled by the database trigger 'on_auth_user_created'.
+        // No client-side upsert to public.users is needed here.
 
         toast.success('Account created successfully! Please complete your company profile.');
         router.push('/onboarding');
       } else {
         setError('Account created, but user data not found after authentication. Please try logging in.');
       }
-    } catch (err) {
-      console.error('SignUpPage: An unexpected error occurred during signup:', err);
+    } catch (err: unknown) { // Use unknown for catch clause variable
+      console.error('SignUpPage: An unexpected error occurred during signup:', err instanceof Error ? err.message : err);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
