@@ -12,9 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
+
 import { useAuth } from '@/hooks/use-auth';
-import { Building2, Search, FileText, User, LogOut, Settings } from 'lucide-react';
+import { Building2,FileText, User, LogOut, Settings } from 'lucide-react';
 
 export function Navbar() {
   const { user, signOut } = useAuth();
