@@ -3,17 +3,23 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { supabase } from '@/lib/supabase'; // Import supabase client to check company profile
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const { user, loading: authLoading, signOut } = useAuth(); // Get user, loading, and signOut from useAuth
+  const { user, loading: authLoading, signOut } = useAuth();
+
+  // Add this log to see if the component is even being rendered
+  console.log('AuthCallbackPage: Component rendered.');
 
   useEffect(() => {
+    console.log('AuthCallbackPage useEffect: Running...');
+    console.log('AuthCallbackPage useEffect: authLoading =', authLoading, ', user =', user);
+
     // If authentication state is still loading, wait
     if (authLoading) {
-      console.log('AuthCallbackPage: Authentication is loading...');
+      console.log('AuthCallbackPage: Authentication is loading, waiting...');
       return;
     }
 
@@ -48,7 +54,6 @@ export default function AuthCallbackPage() {
         router.push('/onboarding');
       } else if (companyError) {
         // Other database error when checking company profile.
-        // This might indicate a deeper issue or a stale session that the backend couldn't resolve.
         console.error('AuthCallbackPage: Error checking company profile:', companyError.message, companyError);
         console.log('AuthCallbackPage: Stale session detected, signing out to clear state.');
         await signOut(); // Force sign out to clear client-side session
@@ -61,7 +66,7 @@ export default function AuthCallbackPage() {
     if (user && !authLoading) {
       checkCompanyProfileAndRedirect();
     }
-  }, [user, authLoading, router, signOut]); // Add signOut to dependencies
+  }, [user, authLoading, router, signOut]);
 
   // Display a loading message while the redirect logic is running
   return (
