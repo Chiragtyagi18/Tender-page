@@ -99,7 +99,7 @@ export default function TendersPage() {
 
       if (error) throw error;
       setTenders(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Failed to load tenders');
       console.error('Tenders error:', error);
     } finally {
