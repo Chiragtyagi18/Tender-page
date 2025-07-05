@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/use-auth';
 import { Building2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase'; // Import the Supabase client
+import { supabase } from '@/lib/supabase';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
@@ -28,10 +28,15 @@ export default function SignUpPage() {
   const { signUp, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Effect to handle redirection if user is already logged in and has a company profile
   useEffect(() => {
-    // If authentication is not loading and there's a user, check for company profile
-    if (!authLoading && user) {
+    // If authentication is still loading, do nothing
+    if (authLoading) {
+      return;
+    }
+
+    // Only attempt to redirect if a user object exists AND their email is confirmed.
+    // This prevents redirection for unconfirmed users or stale user objects from deleted accounts.
+    if (user && user.email_confirmed_at) {
       const checkAndRedirect = async () => {
         console.log('SignUpPage useEffect: Checking for existing company profile for user ID:', user.id);
         const { data, error: companyCheckError } = await supabase
@@ -52,6 +57,8 @@ export default function SignUpPage() {
       };
       checkAndRedirect();
     }
+    // If user is null, or user exists but email is not confirmed,
+    // then the signup page should remain visible.
   }, [user, authLoading, router]);
 
 
@@ -82,7 +89,6 @@ export default function SignUpPage() {
     }
 
     try {
-      // Step 1: Authenticate the user with Supabase
       const { data: authData, error: authError } = await signUp(emailTrimmed, password);
 
       if (authError) {
@@ -92,7 +98,6 @@ export default function SignUpPage() {
         return;
       }
 
-      // If no session is returned, email confirmation is required.
       if (!authData?.session) {
         setSuccessMessage('Account created! Please check your email to confirm your account and log in.');
         toast.success('Account created! Please check your email for a confirmation link.');
@@ -101,39 +106,35 @@ export default function SignUpPage() {
         setConfirmPassword('');
         setAcceptedTerms(false);
         setLoading(false);
-        return; // Stop further execution
+        return;
       }
 
-      // If a session exists (email confirmation not required or already confirmed)
       const authenticatedUser = authData.user;
 
       if (authenticatedUser) {
         console.log('SignUpPage: Authenticated User ID from authData:', authenticatedUser.id);
         console.log('SignUpPage: Authenticated User Email from authData:', authenticatedUser.email);
 
-        // *** REMOVED: Client-side upsert to public.users. This is now handled by a database trigger. ***
-        // const { data: upsertData, error: userProfileUpsertError } = await supabase
-        //   .from('users')
-        //   .upsert(
-        //     {
-        //       id: authenticatedUser.id,
-        //       email: authenticatedUser.email!,
-        //     },
-        //     { onConflict: 'id' }
-        //   );
-        // if (userProfileUpsertError) {
-        //   console.error('SignUpPage: CRITICAL ERROR upserting user profile to public.users table:', userProfileUpsertError.message, userProfileUpsertError);
-        //   setError('Failed to save user profile. Please try again.');
-        //   setLoading(false);
-        //   return;
-        // } else {
-        //   console.log('SignUpPage: User profile upserted successfully into public.users:', upsertData);
-        // }
-        // *** END REMOVED SECTION ***
+        const { data: upsertData, error: userProfileUpsertError } = await supabase
+          .from('users')
+          .upsert(
+            {
+              id: authenticatedUser.id,
+              email: authenticatedUser.email!,
+            },
+            { onConflict: 'id' }
+          );
+
+        if (userProfileUpsertError) {
+          console.error('SignUpPage: CRITICAL ERROR upserting user profile to public.users table:', userProfileUpsertError.message, userProfileUpsertError);
+          setError('Failed to save user profile. Please try again.');
+          setLoading(false);
+          return;
+        } else {
+          console.log('SignUpPage: User profile upserted successfully into public.users:', upsertData);
+        }
 
         toast.success('Account created successfully! Please complete your company profile.');
-
-        // Navigate to the onboarding page for company profile creation
         router.push('/onboarding');
       } else {
         setError('Account created, but user data not found after authentication. Please try logging in.');
