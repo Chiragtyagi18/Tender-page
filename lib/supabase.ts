@@ -196,30 +196,23 @@
 // lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 
-// IMPORTANT: For production applications, it is HIGHLY recommended to load these
-// from environment variables (e.g., process.env.NEXT_PUBLIC_SUPABASE_URL)
-// rather than hardcoding them directly in the file for security reasons.
-// This prevents your sensitive keys from being exposed in your client-side code.
-
-// Retrieve Supabase URL and Anon Key from environment variables.
-// These variables are expected to be set in your .env.local file (for Next.js)
-// or your deployment environment.
+// It is CRUCIAL to load these from environment variables for security and deployment.
+// These variables will be injected by Next.js from your .env.local (development)
+// or from Vercel's environment settings (deployment).
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// --- FIX START ---
-// Ensure that the environment variables are defined.
-// If they are not, throw an error to prevent the application from starting
-// with missing critical configuration. This is crucial for production readiness.
+// Ensure that the environment variables are set.
+// This check will throw an error during build or runtime if variables are missing.
+// Make sure they are set in your .env.local (for local) and Vercel (for deployment).
 if (!supabaseUrl) {
   throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_URL');
 }
 if (!supabaseAnonKey) {
   throw new Error('Missing environment variable: NEXT_PUBLIC_SUPABASE_ANON_KEY');
 }
-// --- FIX END ---
 
-// Create the Supabase client instance.
+// Create the Supabase client instance
 // TypeScript now knows that supabaseUrl and supabaseAnonKey are definitely strings
 // because of the checks above.
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
