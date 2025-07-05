@@ -34,8 +34,7 @@ export default function SignUpPage() {
       return;
     }
 
-    // Only attempt to redirect if a user object exists AND their email is confirmed.
-    // This prevents redirection for unconfirmed users or stale user objects from deleted accounts.
+    
     if (user && user.email_confirmed_at) {
       const checkAndRedirect = async () => {
         console.log('SignUpPage useEffect: Checking for existing company profile for user ID:', user.id);
