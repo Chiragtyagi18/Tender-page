@@ -286,7 +286,6 @@
 
 
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -297,26 +296,25 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/use-auth';
-import { Building2, UploadCloud } from 'lucide-react'; // Added UploadCloud icon
+import { Building2, UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase'; // Import the Supabase client
+import { supabase } from '@/lib/supabase';
 
 export default function OnboardingPage() {
   const [companyName, setCompanyName] = useState('');
-  const [industry, setIndustry] = useState(''); // New state for industry
+  const [industry, setIndustry] = useState('');
   const [description, setDescription] = useState('');
-  const [companyLogo, setCompanyLogo] = useState<File | null>(null); // State for company logo file
+  const [companyLogo, setCompanyLogo] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null); // State for logo preview
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
 
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Redirect if no user or if user already has a company profile
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/auth/signin'); // Redirect to sign-in if no user
+      router.push('/auth/signin');
       return;
     }
 
@@ -332,12 +330,11 @@ export default function OnboardingPage() {
         if (data) {
           console.log('Onboarding: Company profile found, redirecting to dashboard.');
           router.push('/dashboard');
-        } else if (companyError && companyError.code !== 'PGRST116') { // PGRST116 means "no rows found"
+        } else if (companyError && companyError.code !== 'PGRST116') {
           console.error('Onboarding: Error checking company profile:', companyError.message, companyError);
           setError('Failed to load company profile. Please try again.');
         } else {
           console.log('Onboarding: No existing company profile found, proceed with onboarding.');
-          // Continue with onboarding, no redirection needed
         }
       };
       checkCompanyProfile();
@@ -348,7 +345,7 @@ export default function OnboardingPage() {
     const file = e.target.files?.[0];
     if (file) {
       setCompanyLogo(file);
-      setLogoPreviewUrl(URL.createObjectURL(file)); // Create a URL for preview
+      setLogoPreviewUrl(URL.createObjectURL(file));
     } else {
       setCompanyLogo(null);
       setLogoPreviewUrl(null);
@@ -369,15 +366,16 @@ export default function OnboardingPage() {
     let logoUrl: string | null = null;
 
     try {
-      // 1. Upload company logo to Supabase Storage if a file is selected
       if (companyLogo) {
-        const filePath = `${user.id}/${Date.now()}-${companyLogo.name}`; // Unique path for the logo
+        const filePath = `${user.id}/${Date.now()}-${companyLogo.name}`;
         console.log('Onboarding: Attempting to upload file to path:', filePath);
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('photos') // *** UPDATED: Using 'photos' bucket name here ***
+
+        // Removed 'uploadData' from destructuring as it's not used
+        const { error: uploadError } = await supabase.storage
+          .from('photos')
           .upload(filePath, companyLogo, {
-            cacheControl: '3600', // Cache for 1 hour
-            upsert: false, // Do not overwrite existing files with the same name
+            cacheControl: '3600',
+            upsert: false,
           });
 
         if (uploadError) {
@@ -387,30 +385,45 @@ export default function OnboardingPage() {
           return;
         }
 
-        // Get the public URL of the uploaded image
+        console.log('Onboarding: File uploaded successfully.');
+
         const { data: publicUrlData } = supabase.storage
-          .from('photos') // *** UPDATED: Using 'photos' bucket name here ***
+          .from('photos')
           .getPublicUrl(filePath);
 
         logoUrl = publicUrlData.publicUrl;
-        console.log('Onboarding: Company logo uploaded successfully. URL:', logoUrl);
+        console.log('Onboarding Debug: Generated publicUrlData:', publicUrlData);
+        console.log('Onboarding Debug: Final logoUrl to be saved:', logoUrl);
+
+        if (!logoUrl) {
+            console.warn('Onboarding: logoUrl is null or empty after getPublicUrl. This might indicate a problem with bucket public settings or policy.');
+        }
+
+      } else {
+        console.log('Onboarding: No company logo file selected for upload.');
       }
 
-      // 2. Upsert company data (including logo URL) to public.companies
-      console.log('Onboarding: Attempting to upsert company data for user ID:', user.id);
+      console.log('Onboarding: Attempting to upsert company data with payload:', {
+        user_id: user.id,
+        name: companyName,
+        industry: industry,
+        description: description,
+        logo_url: logoUrl,
+      });
+
       const { data: companyData, error: companyUpsertError } = await supabase
         .from('companies')
         .upsert(
           {
             user_id: user.id,
             name: companyName,
-            industry: industry, // Include industry
+            industry: industry,
             description: description,
-            logo_url: logoUrl, // Include logo URL
+            logo_url: logoUrl,
           },
-          { onConflict: 'user_id' } // Update if user_id already exists
+          { onConflict: 'user_id' }
         )
-        .select(); // Select the inserted/updated row to confirm
+        .select();
 
       if (companyUpsertError) {
         console.error('Onboarding: CRITICAL ERROR upserting company profile:', companyUpsertError.message, companyUpsertError);
@@ -421,7 +434,7 @@ export default function OnboardingPage() {
 
       console.log('Onboarding: Company profile saved successfully:', companyData);
       toast.success('Company profile saved successfully!');
-      router.push('/dashboard'); // Redirect to dashboard after successful onboarding
+      router.push('/dashboard');
 
     } catch (err: unknown) {
       console.error('Onboarding: An unexpected error occurred during onboarding:', err instanceof Error ? err.message : err);
