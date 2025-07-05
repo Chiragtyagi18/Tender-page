@@ -250,7 +250,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Recent Tenders</h2>
             <Button variant="outline" asChild className="rounded-lg">
-              <Link href="/tenders">View All</Link>
+              <Link href="/tender">View All</Link>
             </Button>
           </div>
 
@@ -266,7 +266,7 @@ export default function DashboardPage() {
                     Start by posting your first tender to find qualified suppliers.
                   </p>
                   <Button asChild className="rounded-lg">
-                    <Link href="/tenders/create">Post Your First Tender</Link>
+                    <Link href="/tender/create">Post Your First Tender</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <Button variant="outline" size="sm" asChild className="rounded-lg">
-                        <Link href={`/tenders/${tender.id}`}>
+                        <Link href={`/tender/${tender.id}`}>
                           <span>
                             <Eye className="h-4 w-4 mr-2" />
                             View
@@ -340,7 +340,7 @@ export default function DashboardPage() {
                     Browse available tenders and submit your proposals.
                   </p>
                   <Button asChild className="rounded-lg">
-                    <Link href="/tenders">Browse Tenders</Link>
+                    <Link href="/tender">Browse Tenders</Link>
                   </Button>
                 </CardContent>
               </Card>
