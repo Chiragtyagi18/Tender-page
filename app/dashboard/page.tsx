@@ -622,7 +622,7 @@ export default function DashboardPage() {
           </div>
         </div>
         <Button asChild className="rounded-lg shadow-md">
-          <Link href="/tender/create"> {/* Changed from /tenders/create */}
+          <Link href="/tender/create"> 
             <span>
               <Plus className="h-4 w-4 mr-2" />
               Post New Tender
