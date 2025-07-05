@@ -26,7 +26,7 @@ export function Footer() {
               </h3>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/tenders" className="text-gray-600 hover:text-blue-600 transition-colors">
+                  <Link href="/tender" className="text-gray-600 hover:text-blue-600 transition-colors">
                     Browse Tenders
                   </Link>
                 </li>
