@@ -423,7 +423,7 @@ export default function OnboardingPage() {
       toast.success('Company profile saved successfully!');
       router.push('/dashboard'); // Redirect to dashboard after successful onboarding
 
-    } catch (err: unknown) { // Changed 'any' to 'unknown' and added type guard in console.error
+    } catch (err: unknown) {
       console.error('Onboarding: An unexpected error occurred during onboarding:', err instanceof Error ? err.message : err);
       setError('An unexpected error occurred. Please try again.');
     } finally {
