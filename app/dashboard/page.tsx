@@ -58,7 +58,7 @@ interface Application {
 }
 
 export default function DashboardPage() {
-  const { user, loading: authLoading, signOut } = useAuth(); // Destructure signOut
+  const { user, loading: authLoading } = useAuth(); // Destructure signOut
   const router = useRouter(); // Initialize useRouter
   const [company, setCompany] = useState<Company | null>(null);
   const [tenders, ] = useState<Tender[]>([]);
