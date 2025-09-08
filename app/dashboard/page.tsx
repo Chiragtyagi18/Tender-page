@@ -61,9 +61,9 @@ export default function DashboardPage() {
   const { user, loading: authLoading, signOut } = useAuth(); // Destructure signOut
   const router = useRouter(); // Initialize useRouter
   const [company, setCompany] = useState<Company | null>(null);
-  const [tenders, setTenders] = useState<Tender[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [stats, setStats] = useState({
+  const [tenders, ] = useState<Tender[]>([]);
+  const [applications, ] = useState<Application[]>([]);
+  const [stats, ] = useState({
     totalTenders: 0,
     activeTenders: 0,
     totalApplications: 0,
@@ -121,10 +121,10 @@ export default function DashboardPage() {
     }
   }, [user, authLoading, router]); // Depend on user, authLoading, and router
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/auth/signin');
-  };
+  // const handleSignOut = async () => {
+  //   await signOut();
+  //   router.push('/auth/signin');
+  // };
 
   // Show loading spinner while authentication or data is loading
   if (authLoading || dataLoading) {

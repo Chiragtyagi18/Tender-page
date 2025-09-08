@@ -12,7 +12,7 @@ export default function TermsPage() {
         </CardHeader>
         <CardContent className="text-gray-700 space-y-6 text-base leading-relaxed">
           <p>
-            Welcome to TenderHub! These terms and conditions outline the rules and regulations for the use of TenderHub's Website, located at [Your Website URL].
+            Welcome to TenderHub! These terms and conditions outline the rules and regulations for the use of TenderHub Website, located at [Your Website URL].
           </p>
           <p>
             By accessing this website we assume you accept these terms and conditions. Do not continue to use TenderHub if you do not agree to take all of the terms and conditions stated on this page.
@@ -35,14 +35,14 @@ export default function TermsPage() {
           </ul>
           <h3 className="text-xl font-semibold mt-6 mb-2">3. Your Content</h3>
           <p>
-            In these Website Standard Terms and Conditions, "Your Content" shall mean any audio, video, text, images or other material you choose to display on this Website. With respect to Your Content, by displaying it, you grant TenderHub a non-exclusive, worldwide, irrevocable, royalty-free, sublicensable license to use, reproduce, adapt, publish, translate and distribute it in any and all media.
+            In these Website Standard Terms and Conditions, Your Content shall mean any audio, video, text, images or other material you choose to display on this Website. With respect to Your Content, by displaying it, you grant TenderHub a non-exclusive, worldwide, irrevocable, royalty-free, sublicensable license to use, reproduce, adapt, publish, translate and distribute it in any and all media.
           </p>
           <p>
-            Your Content must be your own and must not be infringing on any third-party’s rights. TenderHub reserves the right to remove any of Your Content from this Website at any time, and for any reason, without notice.
+            Your Content must be your own and must not be infringing on any third-party rights. TenderHub reserves the right to remove any of Your Content from this Website at any time, and for any reason, without notice.
           </p>
           <h3 className="text-xl font-semibold mt-6 mb-2">4. No warranties</h3>
           <p>
-            This Website is provided "as is," with all faults, and TenderHub expresses no representations or warranties, of any kind related to this Website or the materials contained on this Website. Also, nothing contained on this Website shall be interpreted as providing consult or advice to you.
+            This Website is provided as is, with all faults, and TenderHub expresses no representations or warranties, of any kind related to this Website or the materials contained on this Website. Also, nothing contained on this Website shall be interpreted as providing consult or advice to you.
           </p>
           <h3 className="text-xl font-semibold mt-6 mb-2">5. Limitation of liability</h3>
           <p>
